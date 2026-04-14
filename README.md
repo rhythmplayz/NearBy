@@ -156,7 +156,7 @@ NearBy provides:
 * **Rhythm Yeasir** – Team Leader
 * **Prantik Nath Pranta** – QA
 * **Hafsa Afrin Priya** – Business Analyst
-* **Jotirmoyee Howladar** – Reporting Lead 
+* **Jotirmoyee Howladar** , **FAtema Tuj Johora Mim** – Reporting Lead 
 
 ---
 
