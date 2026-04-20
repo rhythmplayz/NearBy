@@ -29,6 +29,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Custom User Model
+AUTH_USER_MODEL = 'common_auth_user.AuthUser'
+
 # CORS Configuration - Allow React (typically port 3000 or 5173)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -67,6 +70,7 @@ INSTALLED_APPS = [
     'rest_framework', #for API development
     'corsheaders',  #for handling Cross-Origin Resource Sharing (CORS) React frontend and Django backend
     'django_filters', #for filtering data in API views
+    'common_auth_user', #custom user model app
 ]
 
 MIDDLEWARE = [
