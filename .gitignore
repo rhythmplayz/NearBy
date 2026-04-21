@@ -1,0 +1,53 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Node.js / Frontend
+node_modules/
+dist/
+build/
+.npm/
+.pnpm-store/
+
+# Selenium / test artifacts
+*.png
+*.jpg
+*.jpeg
+*.webp
+screenshots/
+reports/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Misc
+coverage/
+.tmp/
+tmp/
