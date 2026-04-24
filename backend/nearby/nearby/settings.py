@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'django_filters', #for filtering data in API views
     'common_auth_user', #custom user model app
     'users', #users app for regular user role
+    'sellers', #sellers app for seller role
 ]
 
 MIDDLEWARE = [
