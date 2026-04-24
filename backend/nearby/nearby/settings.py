@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'corsheaders',  #for handling Cross-Origin Resource Sharing (CORS) React frontend and Django backend
     'django_filters', #for filtering data in API views
     'common_auth_user', #custom user model app
+    'users', #users app for regular user role
 ]
 
 MIDDLEWARE = [
