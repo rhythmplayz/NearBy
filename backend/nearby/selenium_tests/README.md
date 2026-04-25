@@ -17,15 +17,23 @@ This folder is for UI end-to-end tests using Selenium WebDriver and pytest.
 From the backend project environment:
 
 ```bash
-pip install pytest selenium
+pip install pytest selenium pytest-html
 ```
+
+## HTML report (always same file)
+
+Pytest is configured to always write Selenium report output to:
+
+- `backend/selenium_report.html`
+
+So every Selenium test run updates the same HTML file.
 
 ## Run one Selenium test file
 
 From `backend/nearby`:
 
 ```bash
-pytest -v selenium_tests/test_frontend_counter.py
+pytest selenium_tests/test_frontend_counter.py
 ```
 
 ## Run all Selenium tests in this folder
@@ -33,7 +41,13 @@ pytest -v selenium_tests/test_frontend_counter.py
 From `backend/nearby`:
 
 ```bash
-pytest -v selenium_tests
+pytest selenium_tests
+```
+
+Recommended (includes user + seller auth tests):
+
+```bash
+pytest selenium_tests/test_user_auth.py selenium_tests/test_seller_auth.py
 ```
 
 ## Frontend URL
