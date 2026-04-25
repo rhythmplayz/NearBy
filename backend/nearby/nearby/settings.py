@@ -36,6 +36,7 @@ AUTH_USER_MODEL = 'common_auth_user.AuthUser'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
+    "http://localhost:5174",
 ]
 
 # REST Framework Configuration
@@ -111,29 +112,16 @@ WSGI_APPLICATION = 'nearby.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# Use SQLite by default for local development so the app can run without a
-# separate MySQL setup. Set NEARBY_DB_ENGINE=mysql and related variables to use
-# MySQL instead.
-DB_ENGINE = os.getenv('NEARBY_DB_ENGINE', 'django.db.backends.sqlite3')
-
-if DB_ENGINE == 'django.db.backends.mysql':
-    DATABASES = {
-        'default': {
-            'ENGINE': DB_ENGINE,
-            'NAME': os.getenv('NEARBY_DB_NAME', 'nearby'),
-            'USER': os.getenv('NEARBY_DB_USER', 'root'),
-            'PASSWORD': os.getenv('NEARBY_DB_PASSWORD', 'dark9191'),
-            'HOST': os.getenv('NEARBY_DB_HOST', 'localhost'),
-            'PORT': os.getenv('NEARBY_DB_PORT', '3306'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'nearby',
+        'USER': 'root',
+        'PASSWORD': 'dark9191',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': DB_ENGINE,
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 
 # Password validation

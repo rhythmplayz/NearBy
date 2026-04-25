@@ -10,9 +10,9 @@ class RiderRegistrationSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'password', 'email', 'full_name',
             'phone', 'address', 'profile_pic', 'vehicle_type',
-            'license_number', 'neighbourhood', 'verification_status', 'rating'
+            'license_number', 'neighbourhood', 'rating'
         ]
-        read_only_fields = ['verification_status', 'rating']
+        read_only_fields = ['rating']
 
     def create(self, validated_data):
         validated_data['user_type'] = 'rider'
