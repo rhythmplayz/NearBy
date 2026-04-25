@@ -33,13 +33,15 @@ def test_counter_increases_after_click(driver):
     heading = wait.until(
         EC.visibility_of_element_located((By.TAG_NAME, "h1"))
     )
-    assert heading.text == "Get started"
+    assert "A smarter way to connect with your" in heading.text
 
-    counter_button = driver.find_element(By.CSS_SELECTOR, "button.counter")
-    assert "Count is 0" in counter_button.text
+    get_started_button = wait.until(
+        EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Get Started')]") )
+    )
+    assert get_started_button.is_displayed()
 
-    counter_button.click()
+    get_started_button.click()
 
     wait.until(
-        EC.text_to_be_present_in_element((By.CSS_SELECTOR, "button.counter"), "Count is 1")
+        EC.visibility_of_element_located((By.XPATH, "//h3[contains(., 'Choose your access')]") )
     )

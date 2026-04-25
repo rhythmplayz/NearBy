@@ -36,6 +36,7 @@ AUTH_USER_MODEL = 'common_auth_user.AuthUser'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
+    "http://localhost:5174",
 ]
 
 # REST Framework Configuration
@@ -73,6 +74,8 @@ INSTALLED_APPS = [
     'common_auth_user', #custom user model app
     'users', #users app for regular user role
     'sellers', #sellers app for seller role
+    'riders', #riders app for rider role
+    'admins', #admins app for admin role
 ]
 
 MIDDLEWARE = [
@@ -109,7 +112,6 @@ WSGI_APPLICATION = 'nearby.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-# changes to use MySQL instead of SQLite
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
