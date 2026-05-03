@@ -5,19 +5,12 @@ from .models import Admin
 
 
 class AdminTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['user_type'] = user.user_type
-        return token
-
     def validate(self, attrs):
         data = super().validate(attrs)
 
         if self.user.user_type != 'admin':
             raise AuthenticationFailed('Only admin accounts can login here.')
 
-        data['user_type'] = self.user.user_type
         return data
 
 class AdminRegistrationSerializer(serializers.ModelSerializer):
@@ -39,10 +32,3 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
         admin.set_password(password)
         admin.save()
         return admin
-
-
-class AdminProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Admin
-        fields = ['full_name', 'username', 'email', 'address', 'phone', 'profile_pic']
-        read_only_fields = ['username', 'email']
