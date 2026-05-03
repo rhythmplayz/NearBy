@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
 import NearByLogo from '../../assets/NearByLogo.png';
+import { getValidStoredToken, storeAuthSession } from '../../utils/authSession';
 
 const slideIn = keyframes`
   from { transform: translateY(-100%); opacity: 0; }
@@ -110,7 +111,7 @@ const RiderLogin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getValidStoredToken('rider');
     if (token) {
       navigate('/rider/dashboard');
     }
@@ -129,7 +130,11 @@ const RiderLogin = () => {
     e.preventDefault();
     try {
       const res = await axios.post('http://127.0.0.1:8000/api/riders/login/', data);
-      localStorage.setItem('token', res.data.access);
+      storeAuthSession({
+        accessToken: res.data.access,
+        refreshToken: res.data.refresh,
+        role: res.data.user_type || 'rider',
+      });
 
       setNotification({ show: true, message: 'Rider Login Success! Redirecting...', type: 'success' });
       setTimeout(() => navigate('/rider/dashboard'), 1500);

@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import UserCommunityNav from '../../../components/UserCommunityNav';
-import Footer from '../../../components/Footer';
-import { getValidStoredToken, clearAuthSession } from '../../../utils/authSession';
+import Footer from '../../components/Footer';
+import { getValidStoredToken, clearAuthSession } from '../../utils/authSession';
 
 const slideIn = keyframes`
   from { transform: translateY(-100%); opacity: 0; }
@@ -41,7 +40,7 @@ const ProfileCard = styled.div`
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   width: 100%;
-  max-width: 520px;
+  max-width: 540px;
   padding: 50px;
   border-radius: 40px;
   box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.05);
@@ -153,7 +152,7 @@ const ActionButton = styled.button`
   cursor: pointer;
 `;
 
-const Profile = () => {
+const AdminProfile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -172,14 +171,14 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const token = getValidStoredToken('user');
+      const token = getValidStoredToken('admin');
       if (!token) {
-        navigate('/user/login');
+        navigate('/admin/login');
         return;
       }
 
       try {
-        const res = await axios.get('http://127.0.0.1:8000/api/users/profile/', {
+        const res = await axios.get('http://127.0.0.1:8000/api/admins/profile/', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -196,7 +195,7 @@ const Profile = () => {
       } catch (err) {
         if (err.response?.status === 401) {
           clearAuthSession();
-          navigate('/user/login');
+          navigate('/admin/login');
         }
       } finally {
         setLoading(false);
@@ -208,9 +207,9 @@ const Profile = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    const token = getValidStoredToken('user');
+    const token = getValidStoredToken('admin');
     if (!token) {
-      navigate('/user/login');
+      navigate('/admin/login');
       return;
     }
 
@@ -224,7 +223,7 @@ const Profile = () => {
     }
 
     try {
-      await axios.put('http://127.0.0.1:8000/api/users/profile/', formData, {
+      await axios.put('http://127.0.0.1:8000/api/admins/profile/', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -238,14 +237,13 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <PageWrapper><UserCommunityNav /></PageWrapper>;
+  if (loading) return <PageWrapper />;
 
   return (
     <>
       {notification.show && <Toast $type={notification.type}>{notification.message}</Toast>}
 
       <PageWrapper>
-        <UserCommunityNav />
         <ProfileContainer>
           <ProfileCard>
             <input
@@ -262,11 +260,11 @@ const Profile = () => {
             />
 
             <ProfileImage $img={preview} onClick={() => fileInputRef.current?.click()}>
-              {!preview && 'U'}
+              {!preview && 'A'}
             </ProfileImage>
 
-            <h2 style={{ marginBottom: '5px' }}>{profile.full_name || 'My Profile'}</h2>
-            <p style={{ color: '#888', marginBottom: '30px' }}>@{profile.username || 'username'}</p>
+            <h2 style={{ marginBottom: '5px' }}>{profile.full_name || 'Admin Profile'}</h2>
+            <p style={{ color: '#888', marginBottom: '30px' }}>@{profile.username || 'admin'}</p>
 
             <form onSubmit={handleUpdate}>
               <InputGroup>
@@ -305,8 +303,9 @@ const Profile = () => {
             </form>
 
             <ActionRow>
-              <ActionButton type="button" onClick={() => navigate('/user/home')}>Go to Home</ActionButton>
-              <ActionButton type="button" onClick={() => navigate('/user/events')}>View Events</ActionButton>
+              <ActionButton type="button" onClick={() => navigate('/admin/dashboard')}>Go to Dashboard</ActionButton>
+              <ActionButton type="button" onClick={() => navigate('/admin/rider-reports')}>Rider Reports</ActionButton>
+              <ActionButton type="button" onClick={() => navigate('/admin/verify-requests')}>Seller Verification</ActionButton>
             </ActionRow>
           </ProfileCard>
         </ProfileContainer>
@@ -316,4 +315,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default AdminProfile;
