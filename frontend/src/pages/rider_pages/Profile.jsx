@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import UserCommunityNav from '../../../components/UserCommunityNav';
-import Footer from '../../../components/Footer';
-import { getValidStoredToken, clearAuthSession } from '../../../utils/authSession';
+import Footer from '../../components/Footer';
+import { getValidStoredToken, clearAuthSession } from '../../utils/authSession';
 
 const slideIn = keyframes`
   from { transform: translateY(-100%); opacity: 0; }
@@ -41,7 +40,7 @@ const ProfileCard = styled.div`
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   width: 100%;
-  max-width: 520px;
+  max-width: 540px;
   padding: 50px;
   border-radius: 40px;
   box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.05);
@@ -153,7 +152,7 @@ const ActionButton = styled.button`
   cursor: pointer;
 `;
 
-const Profile = () => {
+const RiderProfile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -165,6 +164,9 @@ const Profile = () => {
     email: '',
     address: '',
     phone: '',
+    vehicle_type: '',
+    license_number: '',
+    neighbourhood: '',
     profile_pic: null,
   });
 
@@ -172,14 +174,14 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const token = getValidStoredToken('user');
+      const token = getValidStoredToken('rider');
       if (!token) {
-        navigate('/user/login');
+        navigate('/rider/login');
         return;
       }
 
       try {
-        const res = await axios.get('http://127.0.0.1:8000/api/users/profile/', {
+        const res = await axios.get('http://127.0.0.1:8000/api/riders/profile/', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -189,6 +191,9 @@ const Profile = () => {
           email: res.data.email || '',
           address: res.data.address || '',
           phone: res.data.phone || '',
+          vehicle_type: res.data.vehicle_type || '',
+          license_number: res.data.license_number || '',
+          neighbourhood: res.data.neighbourhood || '',
           profile_pic: res.data.profile_pic || null,
         });
 
@@ -196,7 +201,7 @@ const Profile = () => {
       } catch (err) {
         if (err.response?.status === 401) {
           clearAuthSession();
-          navigate('/user/login');
+          navigate('/rider/login');
         }
       } finally {
         setLoading(false);
@@ -208,9 +213,9 @@ const Profile = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    const token = getValidStoredToken('user');
+    const token = getValidStoredToken('rider');
     if (!token) {
-      navigate('/user/login');
+      navigate('/rider/login');
       return;
     }
 
@@ -218,13 +223,16 @@ const Profile = () => {
     formData.append('full_name', profile.full_name);
     formData.append('address', profile.address);
     formData.append('phone', profile.phone);
+    formData.append('vehicle_type', profile.vehicle_type);
+    formData.append('license_number', profile.license_number);
+    formData.append('neighbourhood', profile.neighbourhood);
 
     if (profile.profile_pic instanceof File) {
       formData.append('profile_pic', profile.profile_pic);
     }
 
     try {
-      await axios.put('http://127.0.0.1:8000/api/users/profile/', formData, {
+      await axios.put('http://127.0.0.1:8000/api/riders/profile/', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -238,14 +246,13 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <PageWrapper><UserCommunityNav /></PageWrapper>;
+  if (loading) return <PageWrapper />;
 
   return (
     <>
       {notification.show && <Toast $type={notification.type}>{notification.message}</Toast>}
 
       <PageWrapper>
-        <UserCommunityNav />
         <ProfileContainer>
           <ProfileCard>
             <input
@@ -262,11 +269,11 @@ const Profile = () => {
             />
 
             <ProfileImage $img={preview} onClick={() => fileInputRef.current?.click()}>
-              {!preview && 'U'}
+              {!preview && 'R'}
             </ProfileImage>
 
-            <h2 style={{ marginBottom: '5px' }}>{profile.full_name || 'My Profile'}</h2>
-            <p style={{ color: '#888', marginBottom: '30px' }}>@{profile.username || 'username'}</p>
+            <h2 style={{ marginBottom: '5px' }}>{profile.full_name || 'Rider Profile'}</h2>
+            <p style={{ color: '#888', marginBottom: '30px' }}>@{profile.username || 'rider'}</p>
 
             <form onSubmit={handleUpdate}>
               <InputGroup>
@@ -301,12 +308,39 @@ const Profile = () => {
                 />
               </InputGroup>
 
+              <InputGroup>
+                <label>Vehicle Type</label>
+                <StyledInput
+                  value={profile.vehicle_type}
+                  onChange={(e) => setProfile((current) => ({ ...current, vehicle_type: e.target.value }))}
+                  placeholder="Bike, scooter, car"
+                />
+              </InputGroup>
+
+              <InputGroup>
+                <label>License Number</label>
+                <StyledInput
+                  value={profile.license_number}
+                  onChange={(e) => setProfile((current) => ({ ...current, license_number: e.target.value }))}
+                  placeholder="Enter license number"
+                />
+              </InputGroup>
+
+              <InputGroup>
+                <label>Neighbourhood</label>
+                <StyledInput
+                  value={profile.neighbourhood}
+                  onChange={(e) => setProfile((current) => ({ ...current, neighbourhood: e.target.value }))}
+                  placeholder="Enter neighbourhood"
+                />
+              </InputGroup>
+
               <SaveButton type="submit">Save Changes</SaveButton>
             </form>
 
             <ActionRow>
-              <ActionButton type="button" onClick={() => navigate('/user/home')}>Go to Home</ActionButton>
-              <ActionButton type="button" onClick={() => navigate('/user/events')}>View Events</ActionButton>
+              <ActionButton type="button" onClick={() => navigate('/rider/dashboard')}>Go to Dashboard</ActionButton>
+              <ActionButton type="button" onClick={() => navigate('/rider/login')}>Back to Login</ActionButton>
             </ActionRow>
           </ProfileCard>
         </ProfileContainer>
@@ -316,4 +350,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default RiderProfile;

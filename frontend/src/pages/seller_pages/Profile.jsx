@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import UserCommunityNav from '../../../components/UserCommunityNav';
-import Footer from '../../../components/Footer';
-import { getValidStoredToken, clearAuthSession } from '../../../utils/authSession';
+import Footer from '../../components/Footer';
+import { getValidStoredToken, clearAuthSession } from '../../utils/authSession';
 
 const slideIn = keyframes`
   from { transform: translateY(-100%); opacity: 0; }
@@ -41,7 +40,7 @@ const ProfileCard = styled.div`
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   width: 100%;
-  max-width: 520px;
+  max-width: 560px;
   padding: 50px;
   border-radius: 40px;
   box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.05);
@@ -153,7 +152,7 @@ const ActionButton = styled.button`
   cursor: pointer;
 `;
 
-const Profile = () => {
+const SellerProfile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -165,6 +164,9 @@ const Profile = () => {
     email: '',
     address: '',
     phone: '',
+    business_name: '',
+    neighbourhood: '',
+    verification_status: '',
     profile_pic: null,
   });
 
@@ -172,14 +174,14 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const token = getValidStoredToken('user');
+      const token = getValidStoredToken('seller');
       if (!token) {
-        navigate('/user/login');
+        navigate('/seller/login');
         return;
       }
 
       try {
-        const res = await axios.get('http://127.0.0.1:8000/api/users/profile/', {
+        const res = await axios.get('http://127.0.0.1:8000/api/sellers/profile/', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -189,6 +191,9 @@ const Profile = () => {
           email: res.data.email || '',
           address: res.data.address || '',
           phone: res.data.phone || '',
+          business_name: res.data.business_name || '',
+          neighbourhood: res.data.neighbourhood || '',
+          verification_status: res.data.verification_status || '',
           profile_pic: res.data.profile_pic || null,
         });
 
@@ -196,7 +201,7 @@ const Profile = () => {
       } catch (err) {
         if (err.response?.status === 401) {
           clearAuthSession();
-          navigate('/user/login');
+          navigate('/seller/login');
         }
       } finally {
         setLoading(false);
@@ -208,9 +213,9 @@ const Profile = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    const token = getValidStoredToken('user');
+    const token = getValidStoredToken('seller');
     if (!token) {
-      navigate('/user/login');
+      navigate('/seller/login');
       return;
     }
 
@@ -218,13 +223,15 @@ const Profile = () => {
     formData.append('full_name', profile.full_name);
     formData.append('address', profile.address);
     formData.append('phone', profile.phone);
+    formData.append('business_name', profile.business_name);
+    formData.append('neighbourhood', profile.neighbourhood);
 
     if (profile.profile_pic instanceof File) {
       formData.append('profile_pic', profile.profile_pic);
     }
 
     try {
-      await axios.put('http://127.0.0.1:8000/api/users/profile/', formData, {
+      await axios.put('http://127.0.0.1:8000/api/sellers/profile/', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -238,14 +245,13 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <PageWrapper><UserCommunityNav /></PageWrapper>;
+  if (loading) return <PageWrapper />;
 
   return (
     <>
       {notification.show && <Toast $type={notification.type}>{notification.message}</Toast>}
 
       <PageWrapper>
-        <UserCommunityNav />
         <ProfileContainer>
           <ProfileCard>
             <input
@@ -262,11 +268,16 @@ const Profile = () => {
             />
 
             <ProfileImage $img={preview} onClick={() => fileInputRef.current?.click()}>
-              {!preview && 'U'}
+              {!preview && 'S'}
             </ProfileImage>
 
-            <h2 style={{ marginBottom: '5px' }}>{profile.full_name || 'My Profile'}</h2>
-            <p style={{ color: '#888', marginBottom: '30px' }}>@{profile.username || 'username'}</p>
+            <h2 style={{ marginBottom: '5px' }}>{profile.full_name || 'Seller Profile'}</h2>
+            <p style={{ color: '#888', marginBottom: '20px' }}>@{profile.username || 'seller'}</p>
+            {profile.verification_status ? (
+              <p style={{ color: '#1F8F87', fontWeight: 700, marginBottom: '20px' }}>
+                Verification: {profile.verification_status}
+              </p>
+            ) : null}
 
             <form onSubmit={handleUpdate}>
               <InputGroup>
@@ -293,6 +304,24 @@ const Profile = () => {
               </InputGroup>
 
               <InputGroup>
+                <label>Business Name</label>
+                <StyledInput
+                  value={profile.business_name}
+                  onChange={(e) => setProfile((current) => ({ ...current, business_name: e.target.value }))}
+                  placeholder="Enter business name"
+                />
+              </InputGroup>
+
+              <InputGroup>
+                <label>Neighbourhood</label>
+                <StyledInput
+                  value={profile.neighbourhood}
+                  onChange={(e) => setProfile((current) => ({ ...current, neighbourhood: e.target.value }))}
+                  placeholder="Enter neighbourhood"
+                />
+              </InputGroup>
+
+              <InputGroup>
                 <label>Residential Address</label>
                 <StyledInput
                   value={profile.address}
@@ -305,8 +334,8 @@ const Profile = () => {
             </form>
 
             <ActionRow>
-              <ActionButton type="button" onClick={() => navigate('/user/home')}>Go to Home</ActionButton>
-              <ActionButton type="button" onClick={() => navigate('/user/events')}>View Events</ActionButton>
+              <ActionButton type="button" onClick={() => navigate('/seller/dashboard')}>Go to Dashboard</ActionButton>
+              <ActionButton type="button" onClick={() => navigate('/seller/verify')}>Submit Verification</ActionButton>
             </ActionRow>
           </ProfileCard>
         </ProfileContainer>
@@ -316,4 +345,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default SellerProfile;

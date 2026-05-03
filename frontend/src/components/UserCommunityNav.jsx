@@ -128,7 +128,7 @@ const UserCommunityNav = () => {
                 </StyledNavLink>
 
                 <StyledNavLink to="/user/profile">
-                    <IconImage src={profileIcon} alt="Profile" />
+                  <IconImage src={profileIcon} alt="Profile" />
                 </StyledNavLink>
             </IconGroup>
 

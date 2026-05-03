@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
 import NearByLogo from '../../assets/NearByLogo.png';
+import { getValidStoredToken, storeAuthSession } from '../../utils/authSession';
 
 const slideIn = keyframes`
   from { transform: translateY(-100%); opacity: 0; }
@@ -111,9 +112,8 @@ const SellerLogin = () => {
 
     // --- AUTH REDIRECT LOGIC ---
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = getValidStoredToken('seller');
         if (token) {
-            // If token exists, they are already logged in
             navigate('/seller/dashboard');
         }
     }, [navigate]);
@@ -131,9 +131,12 @@ const SellerLogin = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            // Pointing to your sellers API login endpoint
             const res = await axios.post('http://127.0.0.1:8000/api/sellers/login/', data);
-            localStorage.setItem('token', res.data.access);
+            storeAuthSession({
+                accessToken: res.data.access,
+                refreshToken: res.data.refresh,
+                role: res.data.user_type || 'seller',
+            });
 
             setNotification({ show: true, message: 'Seller Login Success! Redirecting...', type: 'success' });
 
