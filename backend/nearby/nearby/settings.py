@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'sellers', #sellers app for seller role
     'riders', #riders app for rider role
     'admins', #admins app for admin role
+    'verifications', #verifications app for handling seller verification process
 ]
 
 MIDDLEWARE = [
