@@ -22,6 +22,7 @@ import RiderRegister from './pages/rider_pages/Register.jsx';
 import AdminLogin from './pages/admin_pages/Login.jsx';
 import AdminSellerVerificationRequests from './pages/admin_pages/verifications/Requests.jsx';
 import AdminSellerVerificationReview from './pages/admin_pages/verifications/Review.jsx';
+import AdminRegister from './pages/admin_pages/RegisterAdmin.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -64,6 +65,8 @@ function App() {
 
         {/* --- Admin Specific Routes --- */}
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/register" element={<ProtectedRoute><AdminRegister /></ProtectedRoute>} />
+
         <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/verify-requests" element={<ProtectedRoute><AdminSellerVerificationRequests /></ProtectedRoute>} />
         <Route path="/admin/verifications/review/:pk" element={<ProtectedRoute><AdminSellerVerificationReview /></ProtectedRoute>} />
