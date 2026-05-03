@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../../components/Footer';
 import NearByLogo from '../../assets/NearByLogo.png';
-import { getValidStoredToken, storeAuthSession } from '../../utils/authSession';
 
 const slideIn = keyframes`
   from { transform: translateY(-100%); opacity: 0; }
@@ -104,7 +103,7 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = getValidStoredToken('admin');
+    const token = localStorage.getItem('token');
     if (token) {
       navigate('/admin/dashboard');
     }
@@ -123,11 +122,7 @@ const AdminLogin = () => {
     e.preventDefault();
     try {
       const res = await axios.post('http://127.0.0.1:8000/api/admins/login/', data);
-      storeAuthSession({
-        accessToken: res.data.access,
-        refreshToken: res.data.refresh,
-        role: res.data.user_type || 'admin',
-      });
+      localStorage.setItem('token', res.data.access);
 
       setNotification({ show: true, message: 'Admin Login Success! Redirecting...', type: 'success' });
       setTimeout(() => navigate('/admin/dashboard'), 1500);

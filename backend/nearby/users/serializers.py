@@ -1,25 +1,5 @@
 from rest_framework import serializers
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User
-
-
-class UserTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['user_type'] = user.user_type
-        return token
-
-    def validate(self, attrs):
-        data = super().validate(attrs)
-
-        if self.user.user_type != 'user':
-            raise AuthenticationFailed('Only user accounts can login here.')
-
-        data['user_type'] = self.user.user_type
-        return data
-
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
