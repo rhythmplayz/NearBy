@@ -3,6 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../../../components/Footer';
+import AdminNav from '../../../components/AdminNav';
 import NearByLogo from '../../../assets/NearByLogo.png';
 
 const slideIn = keyframes`
@@ -130,6 +131,7 @@ const Requests = () => {
     return (
         <>
             {notification.show && <Toast type={notification.type}>{notification.message}</Toast>}
+            <AdminNav />
             <Container>
                 <ContentBox>
                     <Header>

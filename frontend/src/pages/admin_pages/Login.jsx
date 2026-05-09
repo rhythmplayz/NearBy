@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
 import NearByLogo from '../../assets/NearByLogo.png';
 
@@ -138,7 +138,9 @@ const AdminLogin = () => {
 
       <Container>
         <LoginBox>
-          <img style={{ width: '120px', marginBottom: '30px' }} src={NearByLogo} alt="NearBy" />
+          <Link to="/">
+            <img style={{ width: '120px', marginBottom: '30px', cursor: 'pointer' }} src={NearByLogo} alt="NearBy" />
+          </Link>
 
           <Title>Admin Portal.</Title>
           <Subtitle>Secure login for platform administrators only.</Subtitle>

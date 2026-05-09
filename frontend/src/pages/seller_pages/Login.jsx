@@ -155,7 +155,9 @@ const SellerLogin = () => {
 
             <Container>
                 <LoginBox>
-                    <img style={{ width: '120px', marginBottom: '30px' }} src={NearByLogo} alt="NearBy" />
+                    <Link to="/">
+                        <img style={{ width: '120px', marginBottom: '30px', cursor: 'pointer' }} src={NearByLogo} alt="NearBy" />
+                    </Link>
 
                     <Title>Seller Portal.</Title>
                     <Subtitle>Log in to manage your business and reach your neighbors.</Subtitle>

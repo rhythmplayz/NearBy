@@ -145,7 +145,9 @@ const RiderLogin = () => {
 
       <Container>
         <LoginBox>
-          <img style={{ width: '120px', marginBottom: '30px' }} src={NearByLogo} alt="NearBy" />
+          <Link to="/">
+            <img style={{ width: '120px', marginBottom: '30px', cursor: 'pointer' }} src={NearByLogo} alt="NearBy" />
+          </Link>
 
           <Title>Rider Portal.</Title>
           <Subtitle>Log in to manage deliveries and stay connected with nearby orders.</Subtitle>
