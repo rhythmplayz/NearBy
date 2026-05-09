@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import NearByLogo from '../../assets/NearByLogo.png';
 import Footer from '../../components/Footer';
+import AdminNav from '../../components/AdminNav';
 
 const slideIn = keyframes`
   from { transform: translateY(-100%); opacity: 0; }
@@ -223,6 +224,7 @@ const RegisterAdmin = () => {
     return (
         <>
             {notification.show && <Toast type={notification.type}>{notification.message}</Toast>}
+            <AdminNav />
             <RegContainer>
                 <ContentWrapper>
                     <InfoCard>

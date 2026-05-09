@@ -3,7 +3,9 @@ import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../../../components/Footer';
+import SellerNav from '../../../components/SellerNav';
 import NearByLogo from '../../../assets/NearByLogo.png';
+
 
 const slideIn = keyframes`
   from { transform: translateY(-100%); opacity: 0; }
@@ -120,6 +122,7 @@ const SubmitVerification = () => {
     return (
         <>
             {notification.show && <Toast type={notification.type}>{notification.message}</Toast>}
+            <SellerNav />
             <Container>
                 <SubmitBox>
                     <img style={{ width: '80px', marginBottom: '20px' }} src={NearByLogo} alt="NearBy" />

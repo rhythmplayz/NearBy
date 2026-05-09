@@ -26,6 +26,8 @@ db.sqlite3
 db.sqlite3-journal
 media/
 staticfiles/
+**/migrations/*
+!**/migrations/__init__.py
 
 # Node.js / Frontend
 node_modules/
@@ -41,6 +43,7 @@ build/
 *.webp
 screenshots/
 reports/
+!frontend/src/assets/
 
 # Environment files
 .env

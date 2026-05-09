@@ -3,6 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import Footer from '../../../components/Footer';
+import AdminNav from '../../../components/AdminNav';
 import NearByLogo from '../../../assets/NearByLogo.png';
 
 const slideIn = keyframes`
@@ -118,6 +119,7 @@ const Review = () => {
     return (
         <>
             {notification.show && <Toast type={notification.type}>{notification.message}</Toast>}
+            <AdminNav />
             <Container>
                 <ReviewBox>
                     <img style={{ width: '60px' }} src={NearByLogo} alt="NearBy" />
