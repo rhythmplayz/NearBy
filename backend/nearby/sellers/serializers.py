@@ -19,3 +19,23 @@ class SellerRegistrationSerializer(serializers.ModelSerializer):
         
         seller = Seller.objects.create_user(**validated_data)
         return seller
+
+class SellerProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for viewing and updating seller profiles.
+    """
+    class Meta:
+        model = Seller
+        fields = [
+            'full_name', 'username', 'email', 'address', 'phone', 
+            'business_name', 'neighbourhood', 'profile_pic', 
+            'verification_status', 'rating'
+        ]
+        read_only_fields = ['username', 'email', 'verification_status', 'rating']
+
+    def get_profile_pic(self, obj):
+        if obj.profile_pic:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.profile_pic.url)
+        return None
