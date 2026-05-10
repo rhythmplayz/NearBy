@@ -35,7 +35,7 @@ dist/
 build/
 .npm/
 .pnpm-store/
-
+!frontend/src/assets/
 # Selenium / test artifacts
 *.png
 *.jpg
@@ -43,7 +43,7 @@ build/
 *.webp
 screenshots/
 reports/
-!frontend/src/assets/
+
 
 # Environment files
 .env
