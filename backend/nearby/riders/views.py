@@ -19,3 +19,80 @@ def register_rider(request):
         }, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from .serializers import RiderReportSerializer, RiderReportAttachmentSerializer, RiderReportStatusSerializer, AdminRiderReportUpdateSerializer
+from .models import RiderReport, RiderReportAttachment
+from admins.permissions import IsPlatformAdmin
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
+
+
+class RiderReportListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RiderReportSerializer
+
+    def get_queryset(self):
+        return RiderReport.objects.filter(reporter=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(reporter=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as exc:
+            # log server-side for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception('Error creating RiderReport')
+            return Response({'error': 'Failed to submit report', 'details': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class RiderReportDetailAPIView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RiderReportSerializer
+    queryset = RiderReport.objects.all()
+
+
+class RiderReportAttachmentUploadAPIView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RiderReportAttachmentSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, report_pk, *args, **kwargs):
+        report = get_object_or_404(RiderReport, pk=report_pk)
+        if report.reporter != request.user:
+            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+        file = request.FILES.get('file')
+        if not file:
+            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        att = RiderReportAttachment.objects.create(report=report, file=file)
+        return Response(RiderReportAttachmentSerializer(att).data, status=status.HTTP_201_CREATED)
+
+
+class AdminRiderReportListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    serializer_class = RiderReportSerializer
+    queryset = RiderReport.objects.all().order_by('-created_at')
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_fields = ['report_type', 'status', 'reporter__id']
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at', 'status']
+
+
+class AdminRiderReportStatusUpdateAPIView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    serializer_class = AdminRiderReportUpdateSerializer
+    queryset = RiderReport.objects.all()
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        # send notification or audit log can be placed here
+        # e.g. audit_log(instance, action='admin_update')

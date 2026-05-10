@@ -2,6 +2,25 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from .models import Admin
+from .models import ReportDefinition, GeneratedReport, ReportAccessLog
+
+
+class ReportDefinitionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReportDefinition
+        fields = ['id', 'name', 'slug', 'report_type', 'description', 'owner', 'default_params', 'schedule', 'allow_custom_params', 'created_at', 'updated_at']
+
+
+class GeneratedReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GeneratedReport
+        fields = ['id', 'definition', 'requested_by', 'params', 'status', 'file', 'row_count', 'error', 'created_at', 'completed_at']
+
+
+class ReportAccessLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReportAccessLog
+        fields = ['id', 'report', 'user', 'action', 'ip_address', 'timestamp']
 
 
 class AdminTokenObtainPairSerializer(TokenObtainPairSerializer):
