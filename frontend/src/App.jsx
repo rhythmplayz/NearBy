@@ -67,7 +67,7 @@ function App() {
         {/* --- Protected User Marketplace Routes --- */}
         <Route path="/user/shops" element={<ProtectedRoute><Shops /></ProtectedRoute>} />
         <Route path="/user/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-        
+
         {/* --- Seller Specific Routes --- */}
         <Route path="/seller/login" element={<SellerLogin />} />
         <Route path="/seller/register" element={<SellerRegister />} />
