@@ -141,6 +141,28 @@ const SubmitButton = styled.button`
   }
 `;
 
+// New Styled Component for the Navigation Button
+const SecondaryNavButton = styled.button`
+  background-color: #f2f2f2;
+  color: #555;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background-color: #e0e0e0;
+    color: #000;
+  }
+`;
+
 const RegisterAdmin = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
@@ -159,7 +181,6 @@ const RegisterAdmin = () => {
 
     const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
-    // Check if the current user is an admin
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -197,10 +218,10 @@ const RegisterAdmin = () => {
         });
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/admins/register/', formData, {
+            await axios.post('http://127.0.0.1:8000/api/admins/register/', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${token}` // Critical for the permission check
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -210,7 +231,6 @@ const RegisterAdmin = () => {
                 type: 'success'
             });
 
-            // Reset form
             setAdminData({ full_name: '', username: '', email: '', password: '', phone: '', address: '', profile_pic: null });
             setPreview(null);
         } catch (err) {
@@ -234,7 +254,13 @@ const RegisterAdmin = () => {
                             Add trusted members to the platform management team.
                             New admins will have full access to verification requests and user management.
                         </p>
-                        <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #f2f2f2', width: '100%' }}>
+
+                        {/* ADDED: Go to Profile Button */}
+                        <SecondaryNavButton onClick={() => navigate('/admin/profile')}>
+                            👤 My Admin Profile
+                        </SecondaryNavButton>
+
+                        <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #f2f2f2', width: '100%' }}>
                             <button
                                 onClick={() => navigate('/admin/dashboard')}
                                 style={{ background: 'none', border: 'none', color: '#3CCFC4', cursor: 'pointer', fontWeight: 'bold' }}
