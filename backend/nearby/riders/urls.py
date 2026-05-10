@@ -7,6 +7,8 @@ urlpatterns = [
     path('register/', views.register_rider, name='register_rider'),
     path('login/', TokenObtainPairView.as_view(), name='rider_login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='rider_token_refresh'),
+    # Rider profile
+    path('profile/', views.RiderProfileRetrieveUpdateAPIView.as_view(), name='rider_profile'),
     # Rider reports
     path('reports/', views.RiderReportListCreateAPIView.as_view(), name='rider_reports'),
     path('reports/<int:pk>/', views.RiderReportDetailAPIView.as_view(), name='rider_report_detail'),

@@ -56,3 +56,21 @@ class AdminRiderReportUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = RiderReport
         fields = ['status', 'assigned_to', 'admin_response']
+
+
+class RiderProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rider
+        fields = [
+            'id', 'username', 'email', 'full_name', 'phone', 'address',
+            'profile_pic', 'vehicle_type', 'license_number', 'neighbourhood', 'rating'
+        ]
+        read_only_fields = ['id', 'username', 'rating']
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Ensure profile_pic is a proper URL or None
+        if data.get('profile_pic') and isinstance(data['profile_pic'], str):
+            if not data['profile_pic'].startswith('http'):
+                data['profile_pic'] = self.context.get('request').build_absolute_uri(data['profile_pic']) if self.context.get('request') else data['profile_pic']
+        return data
