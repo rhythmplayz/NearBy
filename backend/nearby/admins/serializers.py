@@ -51,3 +51,26 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
         admin.set_password(password)
         admin.save()
         return admin
+    
+class AdminProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for viewing and updating Admin profiles.
+    """
+    class Meta:
+        model = Admin
+        fields = [
+            'full_name', 'username', 'email', 'phone', 
+            'address', 'profile_pic', 'user_type', 'status'
+        ]
+        # Admins cannot change their username, email, or system role via the profile page
+        read_only_fields = ['username', 'email', 'user_type', 'status']
+
+    def get_profile_pic(self, obj):
+        """
+        Ensures the absolute URL for the profile picture is returned.
+        """
+        if obj.profile_pic:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.profile_pic.url)
+        return None

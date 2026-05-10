@@ -36,6 +36,7 @@ import AdminRegister from './pages/admin_pages/RegisterAdmin.jsx';
 import AdminDashboard from './pages/admin_pages/Dashboard.jsx';
 import AdminReports from './pages/admin_pages/Reports.jsx';
 import AdminNotifications from './pages/admin_pages/Notifications.jsx';
+import AdminProfile from './pages/admin_pages/Profile.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -66,7 +67,7 @@ function App() {
         {/* --- Protected User Marketplace Routes --- */}
         <Route path="/user/shops" element={<ProtectedRoute><Shops /></ProtectedRoute>} />
         <Route path="/user/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-
+        
         {/* --- Seller Specific Routes --- */}
         <Route path="/seller/login" element={<SellerLogin />} />
         <Route path="/seller/register" element={<SellerRegister />} />
@@ -86,6 +87,7 @@ function App() {
         {/* --- Admin Specific Routes --- */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/register" element={<ProtectedRoute><AdminRegister /></ProtectedRoute>} />
+        <Route path="/admin/profile" element={<ProtectedRoute><AdminProfile /></ProtectedRoute>} />
 
         {/* Main Admin Pages */}
         <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

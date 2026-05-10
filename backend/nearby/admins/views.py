@@ -1,27 +1,35 @@
-from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import AdminTokenObtainPairSerializer
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-from .serializers import AdminRegistrationSerializer
-from .permissions import IsPlatformAdmin
-from rest_framework.views import APIView
-from rest_framework import generics
-from .serializers import ReportDefinitionSerializer, GeneratedReportSerializer
-from .models import ReportDefinition, GeneratedReport
-from django.http import StreamingHttpResponse, HttpResponse
-import csv
-import io
-from django.utils.text import slugify
 from django.db import transaction
-from users.models import User
-from sellers.models import Seller
-from rest_framework.parsers import JSONParser
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.filters import OrderingFilter, SearchFilter
+from django.http import HttpResponse, StreamingHttpResponse
+from django.utils.text import slugify
+
 from django_filters.rest_framework import DjangoFilterBackend
 
+from rest_framework import generics, status
+from rest_framework.decorators import APIView, api_view, permission_classes
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.parsers import JSONParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from admins.models import Admin
+from sellers.models import Seller
+from users.models import User
+
+from .models import GeneratedReport, ReportDefinition
+from .permissions import IsPlatformAdmin
+from .serializers import (
+    AdminProfileSerializer,
+    AdminRegistrationSerializer,
+    AdminTokenObtainPairSerializer,
+    GeneratedReportSerializer,
+    ReportDefinitionSerializer,
+)
+
+import csv
+import io
 
 class AdminTokenObtainPairView(TokenObtainPairView):
     serializer_class = AdminTokenObtainPairSerializer
@@ -179,3 +187,39 @@ def download_report_file(request, pk):
     response = HttpResponse(gen.file, content_type='application/octet-stream')
     response['Content-Disposition'] = f'attachment; filename="{gen.file.name.split("/")[-1]}"'
     return response
+class AdminProfileView(APIView):
+    """
+    View to get or update the profile of the logged-in administrator.
+    """
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+
+    def get(self, request):
+        try:
+            # Fetch the Admin instance specifically
+            admin = Admin.objects.get(id=request.user.id)
+            serializer = AdminProfileSerializer(admin, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Admin.DoesNotExist:
+            return Response({"error": "Admin profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request):
+        try:
+            admin = Admin.objects.get(id=request.user.id)
+            # Use partial=True to allow updating specific fields like phone or profile_pic
+            serializer = AdminProfileSerializer(
+                admin, 
+                data=request.data, 
+                partial=True, 
+                context={'request': request}
+            )
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message": "Admin profile updated successfully!",
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+                
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Admin.DoesNotExist:
+            return Response({"error": "Admin profile not found"}, status=status.HTTP_404_NOT_FOUND)

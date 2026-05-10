@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import AdminTokenObtainPairView, register_admin
 from .views import ReportDefinitionListCreateAPIView, GeneratedReportListAPIView, generate_report, download_report_file
+from .views import AdminProfileView, AdminTokenObtainPairView, register_admin
 
 
 urlpatterns = [
@@ -12,4 +12,5 @@ urlpatterns = [
     path('reports/generated/', GeneratedReportListAPIView.as_view(), name='generated_reports'),
     path('reports/generate/', generate_report, name='generate_report'),
     path('reports/download/<int:pk>/', download_report_file, name='download_report'),
+    path('profile/', AdminProfileView.as_view(), name='admin_profile'),
 ]
