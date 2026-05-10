@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components'; // Re-use styles from above
 import { NavLink, useNavigate } from 'react-router-dom';
+import { FiBox } from 'react-icons/fi';
 
 import dashboardIcon from '../assets/nav_icons/seller/dashboard.png';
 import ordersIcon from '../assets/nav_icons/seller/orders.png';
@@ -62,6 +63,23 @@ const IconImage = styled.img`
   filter: brightness(0) invert(1); 
 `;
 
+const IconLabel = styled.span`
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ProductIcon = styled(FiBox)`
+  color: white;
+  width: 34px;
+  height: 34px;
+`;
+
 const LogoutButton = styled.button`
   position: absolute;
   right: 40px;
@@ -93,6 +111,9 @@ const SellerNav = () => {
                 </StyledNavLink>
                 <StyledNavLink to="/seller/verify">
                     <IconImage src={ordersIcon} alt="Verify Business" title="Submit Verification" />
+                </StyledNavLink>
+                <StyledNavLink to="/seller/products">
+                  <IconLabel><ProductIcon /></IconLabel>
                 </StyledNavLink>
                 <StyledNavLink to="/seller/notifications">
                     <IconImage src={notificationsIcon} alt="Notifications" />

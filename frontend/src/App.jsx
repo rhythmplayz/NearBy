@@ -17,6 +17,7 @@ import SellerLogin from './pages/seller_pages/Login.jsx';
 import SellerRegister from './pages/seller_pages/Register.jsx';
 import SubmitVerification from './pages/seller_pages/verifications/Submit.jsx';
 import SellerDashboard from './pages/seller_pages/Dashboard.jsx';
+import SellerProducts from './pages/seller_pages/Products.jsx';
 import SellerNotifications from './pages/seller_pages/Notifications.jsx';
 import SellerProfile from './pages/seller_pages/Profile.jsx';
 
@@ -73,6 +74,7 @@ function App() {
         <Route path="/seller/register" element={<SellerRegister />} />
         <Route path="/seller/verify" element={<ProtectedRoute><SubmitVerification /></ProtectedRoute>} />
         <Route path="/seller/dashboard" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
+        <Route path="/seller/products" element={<ProtectedRoute><SellerProducts /></ProtectedRoute>} />
         <Route path="/seller/notifications" element={<ProtectedRoute><SellerNotifications /></ProtectedRoute>} />
         <Route path="/seller/profile" element={<ProtectedRoute><SellerProfile /></ProtectedRoute>} />
 

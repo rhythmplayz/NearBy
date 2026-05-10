@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/verifications/', include('verifications.urls')),
     path('api/posts/', include('posts.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('api/products/', include('products.urls')),
 ]
 
 if settings.DEBUG:
