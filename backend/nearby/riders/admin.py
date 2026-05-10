@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from riders.models import Rider
+from .models import Rider, RiderReport, RiderReportAttachment
 
 
 admin.site.register(Rider)
+admin.site.register(RiderReport)
+admin.site.register(RiderReportAttachment)

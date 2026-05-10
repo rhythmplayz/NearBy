@@ -53,7 +53,7 @@ pip install -r ..\requirements.txt
 If you are on macOS/Linux, use:
 
 ```bash
-pip install -r ../requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 3.3 Database setup
