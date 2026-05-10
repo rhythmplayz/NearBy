@@ -15,5 +15,6 @@ urlpatterns = [
     path('reports/<int:report_pk>/attachments/', views.RiderReportAttachmentUploadAPIView.as_view(), name='rider_report_attachments'),
     # Admin endpoints
     path('admin/reports/', views.AdminRiderReportListAPIView.as_view(), name='admin_rider_reports'),
+    path('admin/reports/export/', views.AdminRiderReportExportAPIView.as_view(), name='admin_rider_reports_export'),
     path('admin/reports/<int:pk>/status/', views.AdminRiderReportStatusUpdateAPIView.as_view(), name='admin_rider_report_status'),
 ]

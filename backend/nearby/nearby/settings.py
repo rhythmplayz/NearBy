@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'admins', #admins app for admin role
     'verifications', #verifications app for handling seller verification process
     'posts', #posts app for community posts feature
+    'notifications', #notifications app
 ]
 
 MIDDLEWARE = [
