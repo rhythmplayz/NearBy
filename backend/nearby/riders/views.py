@@ -86,6 +86,42 @@ class AdminRiderReportListAPIView(generics.ListAPIView):
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'status']
 
+import csv
+from django.http import HttpResponse
+
+class AdminRiderReportExportAPIView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated, IsPlatformAdmin]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_fields = ['report_type', 'status', 'reporter__id']
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at', 'status']
+
+    def get_queryset(self):
+        return RiderReport.objects.all().order_by('-created_at')
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="rider_reports.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Title', 'Description', 'Report Type', 'Status', 'Reporter', 'Created At', 'Admin Response'])
+        
+        for report in queryset:
+            writer.writerow([
+                report.id,
+                report.title,
+                report.description,
+                report.report_type,
+                report.status,
+                report.reporter.username if report.reporter else '',
+                report.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                report.admin_response
+            ])
+            
+        return response
+
 
 class AdminRiderReportStatusUpdateAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated, IsPlatformAdmin]
