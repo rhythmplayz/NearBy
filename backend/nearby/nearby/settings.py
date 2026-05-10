@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'verifications', #verifications app for handling seller verification process
     'posts', #posts app for community posts feature
     'notifications', #notifications app
+    'products', #products app for seller product management
 ]
 
 MIDDLEWARE = [
