@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import uuid
+import textwrap
 from pathlib import Path
 
 import pytest
@@ -22,24 +23,43 @@ def _ensure_admin_account(username: str, password: str, email: str) -> None:
     project_root = Path(__file__).resolve().parents[1]
     manage_py = project_root / "manage.py"
 
+    setup_script = textwrap.dedent(
+        f"""
+        from admins.models import Admin
+
+        admin, created = Admin.objects.get_or_create(
+            username={username!r},
+            defaults={{
+                'email': {email!r},
+                'full_name': 'Selenium Admin',
+                'phone': '01900000000',
+                'address': 'NearBy HQ',
+                'user_type': 'admin',
+                'is_staff': True,
+                'status': 'active',
+            }},
+        )
+
+        admin.email = {email!r}
+        admin.full_name = 'Selenium Admin'
+        admin.phone = '01900000000'
+        admin.address = 'NearBy HQ'
+        admin.user_type = 'admin'
+        admin.is_staff = True
+        admin.status = 'active'
+        admin.set_password({password!r})
+        admin.save()
+        print('created' if created else 'updated')
+        """
+    ).strip()
+
     subprocess.run(
         [
             sys.executable,
             str(manage_py),
-            "create_admin_account",
-            "--username",
-            username,
-            "--password",
-            password,
-            "--email",
-            email,
-            "--full-name",
-            "Selenium Admin",
-            "--phone",
-            "01900000000",
-            "--address",
-            "NearBy HQ",
-            "--update-existing",
+            "shell",
+            "-c",
+            setup_script,
         ],
         cwd=str(project_root),
         check=True,
