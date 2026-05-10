@@ -54,3 +54,5 @@ reports/
 coverage/
 .tmp/
 tmp/
+
+selenium_report.html
