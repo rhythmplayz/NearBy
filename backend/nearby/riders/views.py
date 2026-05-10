@@ -23,10 +23,10 @@ def register_rider(request):
 
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from .serializers import RiderReportSerializer, RiderReportAttachmentSerializer, RiderReportStatusSerializer, AdminRiderReportUpdateSerializer
-from .models import RiderReport, RiderReportAttachment
+from .serializers import RiderReportSerializer, RiderReportAttachmentSerializer, RiderReportStatusSerializer, AdminRiderReportUpdateSerializer, RiderProfileSerializer
+from .models import Rider, RiderReport, RiderReportAttachment
 from admins.permissions import IsPlatformAdmin
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -96,3 +96,37 @@ class AdminRiderReportStatusUpdateAPIView(generics.UpdateAPIView):
         instance = serializer.save()
         # send notification or audit log can be placed here
         # e.g. audit_log(instance, action='admin_update')
+
+
+class RiderProfileRetrieveUpdateAPIView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RiderProfileSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+    def get(self, request, *args, **kwargs):
+        # Get the Rider instance for the current user
+        try:
+            rider = Rider.objects.get(id=request.user.id)
+        except Rider.DoesNotExist:
+            return Response({'detail': 'Rider profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.get_serializer(rider)
+        return Response(serializer.data)
+    
+    def patch(self, request, *args, **kwargs):
+        # Get the Rider instance for the current user
+        try:
+            rider = Rider.objects.get(id=request.user.id)
+        except Rider.DoesNotExist:
+            return Response({'detail': 'Rider profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.get_serializer(rider, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

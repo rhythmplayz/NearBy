@@ -9,7 +9,7 @@ const Container = styled.div`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr;
   gap: 20px;
 `;
 
@@ -45,7 +45,6 @@ const Button = styled.button`
 
 const AdminReportsContent = () => {
     const [riderReports, setRiderReports] = useState([]);
-    const [verifications, setVerifications] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
@@ -60,7 +59,6 @@ const AdminReportsContent = () => {
 
     useEffect(()=>{
         fetchRiderReports();
-        fetchVerifications();
     },[]);
 
     function apiHeaders(){
@@ -97,27 +95,6 @@ const AdminReportsContent = () => {
         }catch(err){
             console.error('Fetch rider reports exception', err);
             setError('Network or runtime error fetching rider reports: ' + (err.message || err));
-        }
-    }
-
-    const fetchVerifications = async () => {
-        try{
-            if(!token){ return; }
-            const url = `${API_BASE}/api/verifications/admin/verifications/`;
-            console.log('Fetching verifications', url, apiHeaders());
-            const res = await fetch(url, { headers: apiHeaders() });
-            if(res.status === 401){ localStorage.removeItem('token'); navigate('/admin/login'); return; }
-            if(res.ok){
-                const data = await res.json();
-                setVerifications(data.results || data);
-            } else {
-                const text = await res.text();
-                setError(`Failed to load verifications: ${res.status} ${text}`);
-                console.error('Verifications error', res.status, text);
-            }
-        }catch(err){
-            console.error('Fetch verifications exception', err);
-            setError('Network or runtime error fetching verifications: ' + (err.message || err));
         }
     }
 
@@ -181,7 +158,7 @@ const AdminReportsContent = () => {
                     </div>
                 ) : (
                 <Grid>
-                    <Panel style={{gridColumn: '1 / span 1'}}>
+                    <Panel>
                         <Heading>Rider Reports</Heading>
                         <div style={{display:'flex', gap:8, marginBottom:12}}>
                             <input placeholder="Search title or description" value={search} onChange={(e)=>{setSearch(e.target.value); setPage(1);}} style={{flex:1,padding:8,borderRadius:8,border:'1px solid #eee'}} />
@@ -257,24 +234,6 @@ const AdminReportsContent = () => {
                                 <button onClick={()=>{ setPage(p=>p+1); fetchRiderReports(); }} style={{padding:'6px 10px',borderRadius:6}}>Next</button>
                             </div>
                         </div>
-                    </Panel>
-
-                    <Panel style={{gridColumn: '2 / span 1'}}>
-                        <Heading>Seller Verification Requests</Heading>
-                        <List>
-                            {verifications.map(v=> (
-                                <Item key={v.id}>
-                                    <div>
-                                        <strong>{v.seller_name || v.seller_email}</strong>
-                                        <div style={{fontSize:'0.85rem', color:'#666', marginTop:6}}>Applied: {v.created_at ? new Date(v.created_at).toLocaleString() : ''}</div>
-                                        <div style={{fontSize:'0.85rem', color:'#666', marginTop:6}}>Status: {v.verification_status}</div>
-                                    </div>
-                                    <div>
-                                        <Button onClick={()=>navigate(`/admin/verifications/review/${v.id}`)}>Review</Button>
-                                    </div>
-                                </Item>
-                            ))}
-                        </List>
                     </Panel>
                 </Grid>
                 )}
