@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'riders', #riders app for rider role
     'admins', #admins app for admin role
     'verifications', #verifications app for handling seller verification process
+    'posts', #posts app for community posts feature
 ]
 
 MIDDLEWARE = [
