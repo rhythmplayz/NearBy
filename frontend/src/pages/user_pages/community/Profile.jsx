@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import UserCommunityNav from '../../../components/UserCommunityNav';
 import Footer from '../../../components/Footer';
 
@@ -28,12 +28,15 @@ const PageWrapper = styled.div`
   background: linear-gradient(135deg, #f2f2f2 0%, #8DF2E8 100%);
   min-height: 100vh;
   font-family: 'Poppins', sans-serif;
+  padding-bottom: 50px;
 `;
 
 const ProfileContainer = styled.div`
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 60px 20px;
+  gap: 40px;
 `;
 
 const ProfileCard = styled.div`
@@ -135,11 +138,49 @@ const SaveButton = styled.button`
   }
 `;
 
+const MyPostsSection = styled.div`
+  max-width: 600px;
+  width: 100%;
+`;
+
+const PostCard = styled.div`
+  background: white;
+  padding: 25px;
+  border-radius: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+  text-align: left;
+  border-left: 6px solid #3CCFC4;
+  transition: transform 0.2s;
+
+  &:hover { transform: scale(1.01); }
+`;
+
+const PostMeta = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  
+  .type-badge {
+    background: #e0f7f6;
+    color: #3CCFC4;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  
+  .date { font-size: 11px; color: #aaa; }
+`;
+
 const Profile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [userPosts, setUserPosts] = useState([]);
 
   const [profile, setProfile] = useState({
     full_name: '',
@@ -153,7 +194,7 @@ const Profile = () => {
   const [preview, setPreview] = useState(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchInitialData = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
         navigate('/user/login');
@@ -161,34 +202,37 @@ const Profile = () => {
       }
 
       try {
-        const res = await axios.get('http://127.0.0.1:8000/api/users/profile/', {
+        const profileRes = await axios.get('http://127.0.0.1:8000/api/users/profile/', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        console.log("API DATA RECEIVED:", res.data); // IMPORTANT: Check this in F12 Console
-
-        // Explicitly mapping data to state
+        const userData = profileRes.data;
         setProfile({
-          full_name: res.data.full_name || '',
-          username: res.data.username || '',
-          email: res.data.email || '',
-          address: res.data.address || '',
-          phone: res.data.phone || '',
-          profile_pic: res.data.profile_pic || null
+          full_name: userData.full_name || '',
+          username: userData.username || '',
+          email: userData.email || '',
+          address: userData.address || '',
+          phone: userData.phone || '',
+          profile_pic: userData.profile_pic || null
+        });
+        setPreview(userData.profile_pic);
+
+        const postsRes = await axios.get('http://127.0.0.1:8000/api/posts/', {
+          headers: { Authorization: `Bearer ${token}` }
         });
 
-        setPreview(res.data.profile_pic);
-        setLoading(false);
+        const filtered = postsRes.data.filter(post => post.author_username === userData.username);
+        setUserPosts(filtered);
+
       } catch (err) {
-        console.error("Fetch error:", err);
-        if (err.response?.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/user/login');
-        }
+        console.error("Initialization error:", err);
+        if (err.response?.status === 401) navigate('/user/login');
+      } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
+
+    fetchInitialData();
   }, [navigate]);
 
   const handleUpdate = async (e) => {
@@ -212,21 +256,23 @@ const Profile = () => {
         }
       });
       setNotification({ show: true, message: 'Profile updated!', type: 'success' });
-      setTimeout(() => setNotification({ ...notification, show: false }), 3000);
+      setTimeout(() => setNotification({ show: false, message: '', type: '' }), 3000);
     } catch (err) {
       setNotification({ show: true, message: 'Update failed.', type: 'error' });
+      setTimeout(() => setNotification({ show: false, message: '', type: '' }), 3000);
     }
   };
 
-  if (loading) return <PageWrapper><UserCommunityNav /></PageWrapper>;
+  if (loading) return <PageWrapper><UserCommunityNav /><p style={{ textAlign: 'center', marginTop: '50px' }}>Loading Profile...</p></PageWrapper>;
 
   return (
     <>
       {notification.show && <Toast type={notification.type}>{notification.message}</Toast>}
       <UserCommunityNav />
       <PageWrapper>
-        
         <ProfileContainer>
+
+          {/* TOP: PROFILE EDITING CARD */}
           <ProfileCard>
             <input
               type="file"
@@ -284,6 +330,37 @@ const Profile = () => {
               <SaveButton type="submit">Save Changes</SaveButton>
             </form>
           </ProfileCard>
+
+          {/* BOTTOM: USER'S POST FEED */}
+          <MyPostsSection>
+            <h3 style={{ marginBottom: '25px', textAlign: 'center', color: '#333' }}>
+              My Activity Feed ({userPosts.length})
+            </h3>
+
+            {userPosts.length > 0 ? (
+              userPosts.map(post => (
+                <PostCard key={post.id}>
+                  <PostMeta>
+                    <span className="type-badge">{post.post_type}</span>
+                    <span className="date">{new Date(post.created_at).toLocaleDateString()}</span>
+                  </PostMeta>
+
+                  <Link to={`/user/post/${post.id}`} style={{ textDecoration: 'none' }}>
+                    <h4 style={{ margin: '0 0 8px 0', color: '#333' }}>{post.title}</h4>
+                  </Link>
+
+                  <p style={{ fontSize: '13px', color: '#666', lineHeight: '1.5' }}>
+                    {post.description.substring(0, 120)}...
+                  </p>
+                </PostCard>
+              ))
+            ) : (
+              <div style={{ textAlign: 'center', background: 'rgba(255,255,255,0.5)', padding: '40px', borderRadius: '20px' }}>
+                <p style={{ color: '#888' }}>You haven't shared any posts yet.</p>
+              </div>
+            )}
+          </MyPostsSection>
+
         </ProfileContainer>
       </PageWrapper>
       <Footer />

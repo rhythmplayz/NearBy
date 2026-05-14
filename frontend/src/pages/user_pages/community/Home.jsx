@@ -3,6 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import UserCommunityNav from '../../../components/UserCommunityNav';
 import Footer from '../../../components/Footer';
+import { Link, useLocation } from 'react-router-dom';
 
 const slideIn = keyframes`
   from { transform: translateY(-20px); opacity: 0; }
@@ -117,14 +118,14 @@ const Badge = styled.span`
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState(null); // Will be populated via API
+  const [currentUser, setCurrentUser] = useState(null);
+  const location = useLocation();
 
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ title: '', description: '', post_type: 'general', cover_pic: null });
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // 1. Fetch posts and the current user's profile info simultaneously
     const initializeData = async () => {
       setLoading(true);
       await Promise.all([fetchPosts(), fetchUserProfile()]);
@@ -134,19 +135,21 @@ const Home = () => {
     initializeData();
   }, []);
 
-  // NEW: Fetch user profile because it's not in localStorage
+  useEffect(() => {
+    if (location.state && location.state.editPost) {
+      handleEdit(location.state.editPost);
+    }
+  }, [location.state]);
+
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      // Replace this URL with your actual "profile" or "me" endpoint
       const res = await axios.get('http://127.0.0.1:8000/api/users/profile/', {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      console.log("Current User Loaded:", res.data);
-      setCurrentUser(res.data); // Expecting an object with a 'username' field
+      setCurrentUser(res.data);
     } catch (err) {
       console.error("Could not load user profile:", err);
     }
@@ -257,7 +260,17 @@ const Home = () => {
                   </IconButton>
                 </div>
                 <div>
-                  {editingId && <IconButton type="button" onClick={() => { setEditingId(null); setFormData({ title: '', description: '', post_type: 'general', cover_pic: null }) }}>Cancel</IconButton>}
+                  {editingId && (
+                    <IconButton
+                      type="button"
+                      onClick={() => {
+                        setEditingId(null);
+                        setFormData({ title: '', description: '', post_type: 'general', cover_pic: null })
+                      }}
+                    >
+                      Cancel
+                    </IconButton>
+                  )}
                   <Button type="submit">{editingId ? 'Update Post' : 'Post Now'}</Button>
                 </div>
               </div>
@@ -280,8 +293,6 @@ const Home = () => {
                   </AuthorInfo>
                   <div>
                     <Badge>{post.post_type}</Badge>
-
-                    {/* FIXED LOGIC: Compare against fetched currentUser */}
                     {currentUser && currentUser.username === post.author_username && (
                       <>
                         <IconButton onClick={() => handleEdit(post)}>Edit</IconButton>
@@ -297,10 +308,26 @@ const Home = () => {
                   </div>
                 </PostHeader>
 
-                {/* ... (rest of the post display logic) ... */}
-                <h3 style={{ margin: '10px 0' }}>{post.title}</h3>
+                <h3 style={{ margin: '10px 0' }}>
+                  <Link
+                    to={`/user/post/${post.id}`}
+                    style={{ textDecoration: 'none', color: '#0D0D0D', transition: '0.3s' }}
+                    onMouseOver={(e) => e.target.style.color = '#3CCFC4'}
+                    onMouseOut={(e) => e.target.style.color = '#0D0D0D'}
+                  >
+                    {post.title}
+                  </Link>
+                </h3>
                 <p style={{ color: '#444', lineHeight: '1.6' }}>{post.description}</p>
-                {post.cover_pic && <img src={post.cover_pic} alt="cover" style={{ width: '100%', borderRadius: '20px', marginTop: '15px' }} />}
+                {post.cover_pic && (
+                  <Link to={`/user/post/${post.id}`}>
+                    <img
+                      src={post.cover_pic}
+                      alt="cover"
+                      style={{ width: '100%', borderRadius: '20px', marginTop: '15px', cursor: 'pointer' }}
+                    />
+                  </Link>
+                )}
               </PostCard>
             ))
           )}
