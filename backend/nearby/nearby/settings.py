@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     'posts', #posts app for community posts feature
     'notifications', #notifications app
     'products', #products app for seller product management
+    'fares', #fares app for fare calculation and management
 ]
 
 MIDDLEWARE = [
