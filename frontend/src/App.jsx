@@ -6,6 +6,7 @@ import Landing from './pages/Landing.jsx';
 import Login from './pages/user_pages/Login.jsx';
 import Register from './pages/user_pages/Register.jsx';
 import Home from './pages/user_pages/community/Home.jsx';
+import PostDetail from './pages/user_pages/community/PostDetail.jsx';
 import Events from './pages/user_pages/community/Events.jsx';
 import Profile from './pages/user_pages/community/Profile.jsx';
 import Notifications from './pages/user_pages/community/Notifications.jsx';
@@ -42,7 +43,6 @@ import AdminProfile from './pages/admin_pages/Profile.jsx';
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
-    // If no token, send them to the landing page or login
     return <Navigate to="/" replace />;
   }
   return children;
@@ -62,6 +62,7 @@ function App() {
 
         {/* --- Protected User Community Routes --- */}
         <Route path="/user/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/user/post/:id" element={<PostDetail />} />
         <Route path="/user/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
         <Route path="/user/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/user/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
