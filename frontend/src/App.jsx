@@ -29,6 +29,7 @@ import RiderDashboard from './pages/rider_pages/Dashboard.jsx';
 import RiderReports from './pages/rider_pages/Reports.jsx';
 import RiderNotifications from './pages/rider_pages/Notifications.jsx';
 import RiderProfile from './pages/rider_pages/Profile.jsx';
+import OrderDetails from './pages/rider_pages/OrderDetails.jsx';
 
 
 import AdminLogin from './pages/admin_pages/Login.jsx';
@@ -86,6 +87,7 @@ function App() {
         <Route path="/rider/reports" element={<ProtectedRoute><RiderReports /></ProtectedRoute>} />
         <Route path="/rider/notifications" element={<ProtectedRoute><RiderNotifications /></ProtectedRoute>} />
         <Route path="/rider/profile" element={<ProtectedRoute><RiderProfile /></ProtectedRoute>} />
+        <Route path="/rider/order/:id" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
 
         {/* --- Admin Specific Routes --- */}
         <Route path="/admin/login" element={<AdminLogin />} />

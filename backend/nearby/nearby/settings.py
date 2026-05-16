@@ -92,7 +92,19 @@ INSTALLED_APPS = [
     'notifications', #notifications app
     'products', #products app for seller product management
     'fares', #fares app for fare calculation and management
+    'orders', #orders app for delivery order management
+    'channels', #django channels for realtime websocket support
 ]
+
+# Channels (ASGI) configuration
+ASGI_APPLICATION = 'nearby.asgi.application'
+
+# Channel layer - using in-memory layer for development. For production use Redis.
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',#for handling Cross-Origin Resource Sharing (CORS) React frontend and Django backend
