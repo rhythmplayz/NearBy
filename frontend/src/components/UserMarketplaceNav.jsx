@@ -95,6 +95,12 @@ const UserMarketplaceNav = () => {
                 <StyledNavLink to="/user/shops">
                     <IconImage src={homeIcon} alt="Marketplace" title="Shops" />
                 </StyledNavLink>
+                <StyledNavLink to="/user/products" title="Browse Products">
+                    <span style={{fontSize: '1.5rem', filter: 'brightness(0) invert(1)'}}>🛍️</span>
+                </StyledNavLink>
+                <StyledNavLink to="/user/orders" title="Track Orders">
+                    <span style={{fontSize: '1.5rem', filter: 'brightness(0) invert(1)'}}>📦</span>
+                </StyledNavLink>
                 <StyledNavLink to="/user/cart">
                     <IconImage src={cartIcon} alt="Cart" />
                 </StyledNavLink>
