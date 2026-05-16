@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'products', #products app for seller product management
     'fares', #fares app for fare calculation and management
     'orders', #orders app for delivery order management
+    'reviews', #reviews and rating system
     'channels', #django channels for realtime websocket support
 ]
 
