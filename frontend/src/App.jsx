@@ -12,6 +12,8 @@ import Profile from './pages/user_pages/community/Profile.jsx';
 import Notifications from './pages/user_pages/community/Notifications.jsx';
 import Shops from './pages/user_pages/marketplace/Shops.jsx';
 import Cart from './pages/user_pages/marketplace/Cart.jsx';
+import OrderConfirmation from './pages/user_pages/marketplace/OrderConfirmation.jsx';
+import MyOrders from './pages/user_pages/marketplace/MyOrders.jsx';
 
 // --- Seller Pages ---
 import SellerLogin from './pages/seller_pages/Login.jsx';
@@ -70,6 +72,8 @@ function App() {
         {/* --- Protected User Marketplace Routes --- */}
         <Route path="/user/shops" element={<ProtectedRoute><Shops /></ProtectedRoute>} />
         <Route path="/user/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+        <Route path="/user/order-confirmation" element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
+        <Route path="/user/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
 
         {/* --- Seller Specific Routes --- */}
         <Route path="/seller/login" element={<SellerLogin />} />

@@ -7,11 +7,11 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Order, Assignment, OrderStatusHistory
-from .serializers import OrderSerializer, OrderCreateSerializer
+from .serializers import OrderSerializer, OrderCreateSerializer, PlaceOrderSerializer
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all().select_related('assigned_to', 'user').prefetch_related('items', 'status_history')
+    queryset = Order.objects.all().select_related('assigned_to', 'user', 'seller').prefetch_related('items', 'items__product', 'status_history')
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status']
@@ -22,19 +22,37 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return OrderCreateSerializer
+        if self.action == 'place_order':
+            return PlaceOrderSerializer
         return OrderSerializer
 
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
-            return Order.objects.all().select_related('assigned_to', 'user').prefetch_related('items', 'status_history')
+            return Order.objects.all().select_related('assigned_to', 'user', 'seller').prefetch_related('items', 'items__product', 'status_history')
         # allow regular users to see their own orders and riders to see orders assigned to them
         return Order.objects.filter(
             Q(user=user) | Q(assigned_to=user)
-        ).select_related('assigned_to', 'user').prefetch_related('items', 'status_history')
+        ).select_related('assigned_to', 'user', 'seller').prefetch_related('items', 'items__product', 'status_history')
 
     def perform_create(self, serializer): # Removed user=self.request.user to avoid duplicate
         serializer.save()
+
+    @action(detail=False, methods=['post'], url_path='place-order', permission_classes=[IsAuthenticated])
+    def place_order(self, request):
+        """
+        Place a marketplace order from the cart.
+        Expects: { items: [{product_id, quantity, notes?}], delivery_address, payment_method?, customer_note? }
+        Validates stock, calculates pricing (subtotal + 5% tax + delivery fee), and creates the order atomically.
+        """
+        serializer = PlaceOrderSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            order = serializer.save()
+            return Response({
+                'message': 'Order placed successfully!',
+                'order': OrderSerializer(order, context={'request': request}).data,
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated])
     def update_status(self, request, pk=None):
@@ -98,7 +116,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def tracking(self, request, pk=None):
         """Get order tracking details with status history timeline."""
         order = get_object_or_404(
-            Order.objects.select_related('assigned_to', 'user').prefetch_related('items', 'status_history'),
+            Order.objects.select_related('assigned_to', 'user', 'seller').prefetch_related('items', 'items__product', 'status_history'),
             pk=pk
         )
         # Check access
@@ -112,8 +130,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     def my_orders(self, request):
         """Get current user's orders."""
         orders = Order.objects.filter(user=request.user).select_related(
-            'assigned_to', 'user'
-        ).prefetch_related('items', 'status_history').order_by('-created_at')
+            'assigned_to', 'user', 'seller'
+        ).prefetch_related('items', 'items__product', 'status_history').order_by('-created_at')
 
         # Filter by status
         status_filter = request.query_params.get('status')
@@ -131,8 +149,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     def admin_all(self, request):
         """Admin endpoint to manage all orders."""
         orders = Order.objects.all().select_related(
-            'assigned_to', 'user'
-        ).prefetch_related('items', 'status_history').order_by('-created_at')
+            'assigned_to', 'user', 'seller'
+        ).prefetch_related('items', 'items__product', 'status_history').order_by('-created_at')
 
         # Filter by status
         status_filter = request.query_params.get('status')
