@@ -5,6 +5,7 @@ from .models import Order, OrderItem, Assignment, OrderNotification, OrderStatus
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
+    readonly_fields = ('product', 'name', 'quantity', 'unit_price', 'total_price')
 
 
 class OrderStatusHistoryInline(admin.TabularInline):
@@ -15,9 +16,9 @@ class OrderStatusHistoryInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'status', 'assigned_to', 'created_at', 'updated_at')
-    list_filter = ('status',)
-    search_fields = ('pickup_address', 'dropoff_address', 'user__email')
+    list_display = ('id', 'user', 'seller', 'status', 'payment_status', 'total_price', 'assigned_to', 'created_at')
+    list_filter = ('status', 'payment_status', 'payment_method')
+    search_fields = ('pickup_address', 'dropoff_address', 'user__email', 'items_description')
     inlines = [OrderItemInline, OrderStatusHistoryInline]
 
 

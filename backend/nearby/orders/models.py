@@ -4,6 +4,7 @@ from django.conf import settings
 
 class Order(models.Model):
     STATUS_PENDING = 'pending'
+    STATUS_CONFIRMED = 'confirmed'
     STATUS_ASSIGNED = 'assigned'
     STATUS_PICKED_UP = 'picked_up'
     STATUS_IN_TRANSIT = 'in_transit'
@@ -12,6 +13,7 @@ class Order(models.Model):
 
     STATUS_CHOICES = [
         (STATUS_PENDING, 'Pending'),
+        (STATUS_CONFIRMED, 'Confirmed'),
         (STATUS_ASSIGNED, 'Assigned'),
         (STATUS_PICKED_UP, 'Picked Up'),
         (STATUS_IN_TRANSIT, 'In Transit'),
@@ -19,7 +21,23 @@ class Order(models.Model):
         (STATUS_CANCELLED, 'Cancelled'),
     ]
 
+    PAYMENT_STATUS_CHOICES = [
+        ('unpaid', 'Unpaid'),
+        ('paid', 'Paid'),
+        ('refunded', 'Refunded'),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        ('cod', 'Cash on Delivery'),
+        ('online', 'Online Payment'),
+    ]
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
+    seller = models.ForeignKey(
+        'sellers.Seller', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='seller_orders',
+        help_text='Seller whose products are in this order'
+    )
     pickup_address = models.CharField(max_length=255)
     pickup_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     pickup_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -27,12 +45,25 @@ class Order(models.Model):
     dropoff_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     dropoff_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     items_description = models.TextField(blank=True)
+
+    # Pricing breakdown
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=5.00, help_text='Tax percentage')
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
     estimated_distance_km = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     estimated_duration_minutes = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+
+    # Payment
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cod')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='unpaid')
+
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_orders')
     canceled_reason = models.TextField(null=True, blank=True)
+    customer_note = models.TextField(blank=True, help_text='Special instructions from customer')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -43,6 +74,7 @@ class Order(models.Model):
             models.Index(fields=['status']),
             models.Index(fields=['assigned_to']),
             models.Index(fields=['created_at']),
+            models.Index(fields=['seller']),
         ]
 
     def __str__(self):
@@ -51,12 +83,23 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        'products.Product', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='order_items',
+        help_text='Reference to the product ordered'
+    )
     name = models.CharField(max_length=255)
-    quantity = models.IntegerField(default=1)
+    quantity = models.PositiveIntegerField(default=1)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.CharField(max_length=255, blank=True)
 
+    def save(self, *args, **kwargs):
+        self.total_price = self.unit_price * self.quantity
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.name} x{self.quantity}"
+        return f"{self.name} x{self.quantity} @ {self.unit_price}"
 
 
 class OrderStatusHistory(models.Model):
@@ -143,6 +186,7 @@ def create_status_notification(sender, instance, created, **kwargs):
 
     status_messages = {
         Order.STATUS_PENDING: 'Your order has been placed and is pending.',
+        Order.STATUS_CONFIRMED: 'Your order has been confirmed by the seller.',
         Order.STATUS_ASSIGNED: 'A rider has been assigned to your order.',
         Order.STATUS_PICKED_UP: 'Your order has been picked up.',
         Order.STATUS_IN_TRANSIT: 'Your order is on its way!',

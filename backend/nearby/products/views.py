@@ -107,6 +107,12 @@ class SellerProductDetailView(APIView):
         return Response({'message': 'Product deleted successfully.'}, status=status.HTTP_200_OK)
 
 
+class PublicProductListView(APIView):
+    """
+    Public endpoint for users to browse all active products from verified sellers.
+    Supports search by name/description and filtering by category.
+    """
+    permission_classes = [IsAuthenticated]
 class BuyerProductListView(APIView):
     """
     Public product browsing API for buyers.
@@ -118,6 +124,20 @@ class BuyerProductListView(APIView):
         products = Product.objects.filter(
             is_active=True,
             deleted_at__isnull=True,
+            seller__verification_status='verified',
+        ).select_related('category', 'seller').prefetch_related('images').order_by('-created_at')
+
+        # Search
+        search = request.query_params.get('search', '').strip()
+        if search:
+            from django.db.models import Q
+            products = products.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search) |
+                Q(seller__business_name__icontains=search)
+            )
+
+        # Filter by category
         ).select_related('category', 'seller').prefetch_related('images', 'reviews')
 
         # --- Search ---
@@ -135,6 +155,18 @@ class BuyerProductListView(APIView):
         if category:
             products = products.filter(category__name__iexact=category)
 
+        # Filter by seller
+        seller_id = request.query_params.get('seller_id')
+        if seller_id:
+            products = products.filter(seller_id=seller_id)
+
+        paginator = Paginator(products, 20)
+        page_number = request.query_params.get('page', 1)
+        page = paginator.get_page(page_number)
+        serializer = ProductSerializer(page.object_list, many=True, context={'request': request})
+
+        return Response({
+            'count': paginator.count,
         # --- Filter by price range ---
         min_price = request.query_params.get('min_price')
         max_price = request.query_params.get('max_price')
@@ -202,6 +234,19 @@ class BuyerProductListView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+class PublicProductDetailView(APIView):
+    """Public endpoint to get a single product's details."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        product = get_object_or_404(
+            Product.objects.filter(
+                is_active=True,
+                deleted_at__isnull=True,
+            ).select_related('category', 'seller').prefetch_related('images'),
+            pk=pk
+        )
+        serializer = ProductSerializer(product, context={'request': request})
 class BuyerProductDetailView(APIView):
     """Public product detail view for buyers."""
     permission_classes = [AllowAny]
