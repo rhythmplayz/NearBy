@@ -4,33 +4,43 @@ import RiderNav from '../../components/RiderNav';
 import Footer from '../../components/Footer';
 import NotificationsList from '../../components/NotificationsList';
 
-const Container = styled.div`
-  padding: 40px;
-  background-color: #f9f9f9;
+const PageWrap = styled.div`
+  background: linear-gradient(135deg, #f8fffe 0%, #e8f8f5 50%, #f2f2f2 100%);
   min-height: calc(100vh - 80px);
   font-family: 'Poppins', sans-serif;
-  display: flex;
-  justify-content: center;
+  padding: 28px 20px;
+`;
+
+const Container = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
 `;
 
 const ContentCard = styled.div`
-  width: 100%;
-  max-width: 800px;
   background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  padding: 28px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+`;
+
+const Title = styled.h1`
+  font-size: 1.6rem;
+  color: #1a1a2e;
+  margin: 0 0 20px;
 `;
 
 const RiderNotifications = () => {
     return (
         <>
             <RiderNav />
-            <Container>
-                <ContentCard>
-                    <NotificationsList />
-                </ContentCard>
-            </Container>
+            <PageWrap>
+                <Container>
+                    <Title>🔔 Notifications</Title>
+                    <ContentCard>
+                        <NotificationsList />
+                    </ContentCard>
+                </Container>
+            </PageWrap>
             <Footer />
         </>
     );

@@ -130,8 +130,15 @@ class AdminRiderReportStatusUpdateAPIView(generics.UpdateAPIView):
 
     def perform_update(self, serializer):
         instance = serializer.save()
-        # send notification or audit log can be placed here
-        # e.g. audit_log(instance, action='admin_update')
+        # send notification
+        from notifications.models import Notification, NotificationType
+        if instance.reporter:
+            Notification.objects.create(
+                recipient=instance.reporter,
+                notification_type=NotificationType.SYSTEM,
+                title='Report Status Updated',
+                message=f'Your report "{instance.title}" has been updated to {instance.status}.'
+            )
 
 
 class RiderProfileRetrieveUpdateAPIView(generics.GenericAPIView):

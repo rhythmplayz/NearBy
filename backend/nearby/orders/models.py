@@ -41,6 +41,8 @@ class Order(models.Model):
         indexes = [
             models.Index(fields=['user']),
             models.Index(fields=['status']),
+            models.Index(fields=['assigned_to']),
+            models.Index(fields=['created_at']),
         ]
 
     def __str__(self):
@@ -55,6 +57,27 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.name} x{self.quantity}"
+
+
+class OrderStatusHistory(models.Model):
+    """Tracks status changes for order tracking with timestamps."""
+    order = models.ForeignKey(Order, related_name='status_history', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=Order.STATUS_CHOICES)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='status_changes'
+    )
+    note = models.TextField(blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['timestamp']
+        indexes = [
+            models.Index(fields=['order', 'timestamp']),
+        ]
+
+    def __str__(self):
+        return f"Order #{self.order_id} -> {self.status} at {self.timestamp}"
 
 
 class Assignment(models.Model):
@@ -111,3 +134,58 @@ def broadcast_order_update(sender, instance, created, **kwargs):
             'data': data,
         }
     )
+
+
+@receiver(post_save, sender=Order)
+def create_status_notification(sender, instance, created, **kwargs):
+    """Create a notification when order status changes."""
+    from notifications.models import Notification, NotificationType
+
+    status_messages = {
+        Order.STATUS_PENDING: 'Your order has been placed and is pending.',
+        Order.STATUS_ASSIGNED: 'A rider has been assigned to your order.',
+        Order.STATUS_PICKED_UP: 'Your order has been picked up.',
+        Order.STATUS_IN_TRANSIT: 'Your order is on its way!',
+        Order.STATUS_DELIVERED: 'Your order has been delivered successfully!',
+        Order.STATUS_CANCELLED: 'Your order has been cancelled.',
+    }
+
+    message = status_messages.get(instance.status, f'Order #{instance.id} status updated to {instance.status}')
+
+    if created:
+        # Create initial status history
+        OrderStatusHistory.objects.create(
+            order=instance,
+            status=instance.status,
+            note='Order created'
+        )
+    else:
+        # Check if status actually changed by looking at history
+        last_history = instance.status_history.order_by('-timestamp').first()
+        if not last_history or last_history.status != instance.status:
+            OrderStatusHistory.objects.create(
+                order=instance,
+                status=instance.status,
+            )
+
+    # Create notification for the order owner
+    Notification.objects.create(
+        recipient=instance.user,
+        notification_type=NotificationType.ORDER_STATUS,
+        title=f'Order #{instance.id} Update',
+        message=message,
+    )
+
+    # Create notification for the assigned rider (if any)
+    if getattr(instance, 'assigned_to', None):
+        # We don't want to notify the rider about their own action if they are the ones who triggered it?
+        # But we don't have request.user here. So let's just notify them about status changes.
+        rider_message = f"Order #{instance.id} status is now {instance.status}."
+        if instance.status == Order.STATUS_ASSIGNED:
+            rider_message = f"You have been assigned to Order #{instance.id}."
+        Notification.objects.create(
+            recipient=instance.assigned_to,
+            notification_type=NotificationType.ORDER_STATUS,
+            title=f'Order #{instance.id} Assigned/Update',
+            message=rider_message,
+        )
