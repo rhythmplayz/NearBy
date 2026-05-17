@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Avg
 from sellers.models import Seller
 
 
@@ -29,6 +30,8 @@ class Product(models.Model):
         indexes = [
             models.Index(fields=['seller', 'created_at']),
             models.Index(fields=['category', 'created_at']),
+            models.Index(fields=['price']),
+            models.Index(fields=['name']),
         ]
         ordering = ['-created_at']
 
@@ -38,6 +41,17 @@ class Product(models.Model):
     @property
     def is_in_stock(self):
         return self.is_active and self.deleted_at is None and self.stock > 0
+
+    @property
+    def average_rating(self):
+        """Calculate average rating from approved reviews."""
+        avg = self.reviews.filter(status='approved').aggregate(avg=Avg('rating'))['avg']
+        return round(avg, 1) if avg else 0
+
+    @property
+    def review_count(self):
+        """Count of approved reviews."""
+        return self.reviews.filter(status='approved').count()
 
 
 class ProductImage(models.Model):

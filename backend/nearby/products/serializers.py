@@ -21,6 +21,14 @@ class ProductImageSerializer(serializers.ModelSerializer):
         return None
 
 
+class ProductCategorySerializer(serializers.ModelSerializer):
+    product_count = serializers.IntegerField(read_only=True, default=0)
+
+    class Meta:
+        model = ProductCategory
+        fields = ['id', 'name', 'product_count']
+
+
 class ProductSerializer(serializers.ModelSerializer):
     seller_name = serializers.CharField(source='seller.business_name', read_only=True)
     category_name = serializers.CharField(write_only=True)
@@ -123,3 +131,46 @@ class ProductSerializer(serializers.ModelSerializer):
                 ProductImage.objects.create(product=instance, image=image_file)
 
         return instance
+
+
+class BuyerProductSerializer(serializers.ModelSerializer):
+    """Serializer for buyer-facing product browsing with ratings."""
+    seller_name = serializers.CharField(source='seller.business_name', read_only=True)
+    category = serializers.CharField(source='category.name', read_only=True)
+    category_id = serializers.IntegerField(source='category.id', read_only=True)
+    images = serializers.SerializerMethodField()
+    is_in_stock = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'seller',
+            'seller_name',
+            'category',
+            'category_id',
+            'name',
+            'description',
+            'price',
+            'stock',
+            'is_in_stock',
+            'images',
+            'average_rating',
+            'review_count',
+            'created_at',
+        ]
+
+    def get_images(self, obj):
+        request = self.context.get('request')
+        return ProductImageSerializer(obj.images.all(), many=True, context={'request': request}).data
+
+    def get_is_in_stock(self, obj):
+        return obj.is_in_stock
+
+    def get_average_rating(self, obj):
+        return obj.average_rating
+
+    def get_review_count(self, obj):
+        return obj.review_count
